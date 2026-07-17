@@ -26,6 +26,13 @@ export type UserProfile = ProfileInput & {
   updated_at: string
 }
 
+export type BodyMetrics = {
+  age: number
+  bmi: number
+  bmr_kcal: number
+  maintenance_calories_kcal: number
+}
+
 export async function getProfile(): Promise<UserProfile | null> {
   try {
     const response = await api.get<UserProfile>('/api/v1/profile')
@@ -43,5 +50,10 @@ export async function saveProfile(
   profile: ProfileInput,
 ): Promise<UserProfile> {
   const response = await api.put<UserProfile>('/api/v1/profile', profile)
+  return response.data
+}
+
+export async function getBodyMetrics(): Promise<BodyMetrics> {
+  const response = await api.get<BodyMetrics>('/api/v1/profile/metrics')
   return response.data
 }

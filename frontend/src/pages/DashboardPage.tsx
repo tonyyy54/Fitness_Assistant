@@ -6,11 +6,19 @@ import {
   ACCESS_TOKEN_KEY,
   getApiErrorMessage,
 } from '../services/api'
-import { getProfile, type UserProfile } from '../services/profile'
+import { getWeightPlan, type WeightPlan } from '../services/plan'
+import {
+  type BodyMetrics,
+  getBodyMetrics,
+  getProfile,
+  type UserProfile,
+} from '../services/profile'
 
 function DashboardPage() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [metrics, setMetrics] = useState<BodyMetrics | null>(null)
+  const [plan, setPlan] = useState<WeightPlan | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -24,6 +32,8 @@ function DashboardPage() {
         }
 
         setProfile(loadedProfile)
+        setMetrics(await getBodyMetrics())
+        setPlan(await getWeightPlan())
       } catch (requestError) {
         if (
           requestError instanceof AxiosError &&
@@ -55,6 +65,9 @@ function DashboardPage() {
             Fitness Assistant
           </Link>
           <div className="header-actions">
+            <Link className="text-link" to="/plan">
+              减重目标
+            </Link>
             <Link className="text-link" to="/profile">
               编辑档案
             </Link>
@@ -81,21 +94,75 @@ function DashboardPage() {
             </p>
           )}
 
-          {!error && !profile ? (
+          {!error && (!profile || !metrics) ? (
             <p className="loading-copy">正在读取数据…</p>
           ) : (
-            profile && (
+            profile &&
+            metrics && (
               <div className="metric-grid">
                 <article className="metric">
                   <span>当前体重</span>
                   <strong>{profile.current_weight_kg} kg</strong>
                 </article>
                 <article className="metric">
-                  <span>身高</span>
-                  <strong>{profile.height_cm} cm</strong>
+                  <span>BMI</span>
+                  <strong>{metrics.bmi}</strong>
+                </article>
+                <article className="metric">
+                  <span>基础代谢</span>
+                  <strong>{metrics.bmr_kcal} kcal</strong>
+                </article>
+                <article className="metric">
+                  <span>每日维持热量</span>
+                  <strong>{metrics.maintenance_calories_kcal} kcal</strong>
                 </article>
               </div>
             )
+          )}
+
+          {profile && metrics && (
+            <div className="plan-summary">
+              <p className="eyebrow">Weight goal</p>
+              {plan ? (
+                <>
+                  <div className="metric-grid">
+                    <article className="metric">
+                      <span>目标体重</span>
+                      <strong>{plan.target_weight_kg} kg</strong>
+                    </article>
+                    <article className="metric">
+                      <span>建议每日摄入</span>
+                      <strong>
+                        {plan.recommended_daily_calories} kcal
+                      </strong>
+                    </article>
+                    <article className="metric">
+                      <span>每日热量缺口</span>
+                      <strong>{plan.daily_calorie_deficit} kcal</strong>
+                    </article>
+                    <article className="metric">
+                      <span>预计时间</span>
+                      <strong>{plan.estimated_weeks} 周</strong>
+                    </article>
+                  </div>
+                  {plan.warning && (
+                    <p className="form-message form-message--warning">
+                      {plan.warning}
+                    </p>
+                  )}
+                  <Link className="secondary-button" to="/plan">
+                    修改目标
+                  </Link>
+                </>
+              ) : (
+                <div className="empty-state">
+                  <p>设置目标体重后，这里会生成每日热量建议。</p>
+                  <Link className="secondary-button" to="/plan">
+                    设置减重目标
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
         </section>
       </main>

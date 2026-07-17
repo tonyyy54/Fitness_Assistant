@@ -5,6 +5,7 @@ from sqlalchemy import text
 from app.config import settings
 from app.dependencies import DatabaseSession
 from app.routers.auth import router as auth_router
+from app.routers.plan import router as plan_router
 from app.routers.profile import router as profile_router
 from app.routers.users import router as users_router
 
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(profile_router)
+app.include_router(plan_router)
 
 
 @app.get("/health", tags=["system"])

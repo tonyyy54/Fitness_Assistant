@@ -47,3 +47,14 @@ class UserProfileResponse(BaseModel):
     activity_level: ActivityLevel
     created_at: datetime
     updated_at: datetime
+
+
+class BodyMetricsResponse(BaseModel):
+    """根据身体档案计算出的健康指标。"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    age: int
+    bmi: float
+    bmr_kcal: int
+    maintenance_calories_kcal: int

@@ -1,17 +1,34 @@
+import uuid
+
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
 from app.dependencies import CurrentUser, DatabaseSession
 from app.models.user_profile import UserProfile
 from app.schemas.user_profile import (
+    BodyMetricsResponse,
     UserProfileResponse,
     UserProfileUpsert,
 )
+from app.services.calorie_service import calculate_body_metrics
 
 router = APIRouter(
     prefix="/api/v1/profile",
     tags=["profile"],
 )
+
+
+def find_profile(
+    user_id: uuid.UUID,
+    database_session: DatabaseSession,
+) -> UserProfile | None:
+    """根据用户 ID 查询身体档案。"""
+
+    return database_session.scalar(
+        select(UserProfile).where(
+            UserProfile.user_id == user_id,
+        )
+    )
 
 
 @router.get("", response_model=UserProfileResponse)
@@ -21,11 +38,7 @@ def read_profile(
 ) -> UserProfileResponse:
     """获取当前用户的身体档案。"""
 
-    profile = database_session.scalar(
-        select(UserProfile).where(
-            UserProfile.user_id == current_user.id,
-        )
-    )
+    profile = find_profile(current_user.id, database_session)
 
     if profile is None:
         raise HTTPException(
@@ -36,6 +49,26 @@ def read_profile(
     return UserProfileResponse.model_validate(profile)
 
 
+@router.get("/metrics", response_model=BodyMetricsResponse)
+def read_body_metrics(
+    current_user: CurrentUser,
+    database_session: DatabaseSession,
+) -> BodyMetricsResponse:
+    """计算当前用户的 BMI、BMR 与维持热量。"""
+
+    profile = find_profile(current_user.id, database_session)
+
+    if profile is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User profile not found",
+        )
+
+    return BodyMetricsResponse.model_validate(
+        calculate_body_metrics(profile),
+    )
+
+
 @router.put("", response_model=UserProfileResponse)
 def upsert_profile(
     profile_data: UserProfileUpsert,
@@ -44,11 +77,7 @@ def upsert_profile(
 ) -> UserProfileResponse:
     """创建或修改当前用户的身体档案。"""
 
-    profile = database_session.scalar(
-        select(UserProfile).where(
-            UserProfile.user_id == current_user.id,
-        )
-    )
+    profile = find_profile(current_user.id, database_session)
 
     if profile is None:
         profile = UserProfile(

@@ -138,6 +138,44 @@ def test_update_existing_profile(
     assert update_response.json()["activity_level"] == "very_active"
 
 
+def test_read_body_metrics(
+    client: TestClient,
+) -> None:
+    headers = authenticated_headers(client)
+
+    profile_response = client.put(
+        "/api/v1/profile",
+        json=VALID_PROFILE,
+        headers=headers,
+    )
+    assert profile_response.status_code == 200
+
+    response = client.get(
+        "/api/v1/profile/metrics",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["age"] > 0
+    assert response.json()["bmi"] == 26.1
+    assert response.json()["bmr_kcal"] > 0
+    assert response.json()["maintenance_calories_kcal"] > 0
+
+
+def test_body_metrics_require_profile(
+    client: TestClient,
+) -> None:
+    headers = authenticated_headers(client)
+
+    response = client.get(
+        "/api/v1/profile/metrics",
+        headers=headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User profile not found"
+
+
 @pytest.mark.parametrize(
     ("field", "invalid_value"),
     [
