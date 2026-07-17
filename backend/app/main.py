@@ -1,9 +1,12 @@
+from typing import Annotated
+
 from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 
+DatabaseSession = Annotated[Session, Depends(get_db)]
 
 app = FastAPI(
     title="Fitness Application API",
@@ -21,7 +24,7 @@ async def health_check() -> dict[str, str]:
 
 @app.get("/health/database", tags=["system"])
 def database_health_check(
-    database_session: Session = Depends(get_db),
+    database_session: DatabaseSession,
 ) -> dict[str, str]:
     """check if the API can connect to PostgreSQL."""
 
