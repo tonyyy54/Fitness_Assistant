@@ -8,6 +8,7 @@ from app.routers.auth import router as auth_router
 from app.routers.plan import router as plan_router
 from app.routers.profile import router as profile_router
 from app.routers.users import router as users_router
+from app.routers.weights import router as weights_router
 
 app = FastAPI(
     title="Fitness Application API",
@@ -27,6 +28,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(profile_router)
 app.include_router(plan_router)
+app.include_router(weights_router)
 
 
 @app.get("/health", tags=["system"])

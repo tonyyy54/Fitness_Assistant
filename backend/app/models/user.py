@@ -61,3 +61,9 @@ class User(Base):
         cascade="all, delete-orphan",
         uselist=False,
     )
+
+    weight_entries = relationship(
+        "WeightEntry",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

@@ -65,6 +65,9 @@ function DashboardPage() {
             Fitness Assistant
           </Link>
           <div className="header-actions">
+            <Link className="text-link" to="/weights">
+              体重趋势
+            </Link>
             <Link className="text-link" to="/plan">
               减重目标
             </Link>

@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
@@ -11,6 +12,7 @@ from app.schemas.user_profile import (
     UserProfileUpsert,
 )
 from app.services.calorie_service import calculate_body_metrics
+from app.services.weight_service import upsert_weight_entry
 
 router = APIRouter(
     prefix="/api/v1/profile",
@@ -89,6 +91,12 @@ def upsert_profile(
         for field, value in profile_data.model_dump().items():
             setattr(profile, field, value)
 
+    upsert_weight_entry(
+        database_session,
+        user_id=current_user.id,
+        recorded_on=date.today(),
+        weight_kg=profile_data.current_weight_kg,
+    )
     database_session.commit()
     database_session.refresh(profile)
 

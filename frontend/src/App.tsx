@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import PlanPage from './pages/PlanPage'
 import ProfilePage from './pages/ProfilePage'
 import RegisterPage from './pages/RegisterPage'
+import WeightsPage from './pages/WeightsPage'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/plan" element={<PlanPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/weights" element={<WeightsPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
